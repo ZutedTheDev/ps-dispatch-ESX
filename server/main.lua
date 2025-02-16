@@ -59,6 +59,54 @@ RegisterServerEvent('ps-dispatch:server:detach', function(id, player)
     end
 end)
 
+-- Commands
+RegisterCommand('911', function(source, args)
+    if #args < 1 then 
+        TriggerClientEvent('esx:showNotification', source, 'USAGE: /911 [message]')
+        return
+    end
+    local message = table.concat(args, ' ')
+    TriggerClientEvent('ps-dispatch:client:sendEmergencyMsg', source, message, '911', false)
+end)
+
+RegisterCommand('311', function(source, args)
+    if #args < 1 then 
+        TriggerClientEvent('esx:showNotification', source, 'USAGE: /311 [message]')
+        return
+    end
+    local message = table.concat(args, ' ')
+    TriggerClientEvent('ps-dispatch:client:sendEmergencyMsg', source, message, '311', false)
+end)
+
+RegisterCommand('911a', function(source, args)
+    if #args < 1 then 
+        TriggerClientEvent('esx:showNotification', source, 'USAGE: /911a [message]')
+        return
+    end
+    local message = table.concat(args, ' ')
+    TriggerClientEvent('ps-dispatch:client:sendEmergencyMsg', source, message, '911', true)
+end)
+
+RegisterCommand('311a', function(source, args)
+    if #args < 1 then 
+        TriggerClientEvent('esx:showNotification', source, 'USAGE: /311a [message]')
+        return
+    end
+    local message = table.concat(args, ' ')
+    TriggerClientEvent('ps-dispatch:client:sendEmergencyMsg', source, message, '311', true)
+end)
+
+RegisterCommand('dispatch', function(source)
+    local xPlayer = ESX.GetPlayerFromId(source)
+    if not xPlayer then return end
+    
+    if not Config.Jobs[xPlayer.job.name] or not Config.Jobs[xPlayer.job.name].authorized then
+        TriggerClientEvent('esx:showNotification', source, 'You do not have permission to use this command')
+        return
+    end
+    TriggerClientEvent('ps-dispatch:client:openMenu', source, calls)
+end)
+
 -- Callbacks
 lib.callback.register('ps-dispatch:callback:getLatestDispatch', function(source)
     local xPlayer = ESX.GetPlayerFromId(source)
@@ -72,42 +120,4 @@ lib.callback.register('ps-dispatch:callback:getCalls', function(source)
     if not xPlayer then return {} end
     
     return calls
-end)
-
--- Commands
-lib.addCommand('dispatch', {
-    help = locale('open_dispatch')
-}, function(source, raw)
-    TriggerClientEvent("ps-dispatch:client:openMenu", source, calls)
-end)
-
-lib.addCommand('911', {
-    help = 'Send a message to 911',
-    params = { { name = 'message', type = 'string', help = '911 Message' }},
-}, function(source, args, raw)
-    local fullMessage = raw:sub(5)
-    TriggerClientEvent('ps-dispatch:client:sendEmergencyMsg', source, fullMessage, "911", false)
-end)
-lib.addCommand('911a', {
-    help = 'Send an anonymous message to 911',
-    params = { { name = 'message', type = 'string', help = '911 Message' }},
-}, function(source, args, raw)
-    local fullMessage = raw:sub(5)
-    TriggerClientEvent('ps-dispatch:client:sendEmergencyMsg', source, fullMessage, "911", true)
-end)
-
-lib.addCommand('311', {
-    help = 'Send a message to 311',
-    params = { { name = 'message', type = 'string', help = '311 Message' }},
-}, function(source, args, raw)
-    local fullMessage = raw:sub(5)
-    TriggerClientEvent('ps-dispatch:client:sendEmergencyMsg', source, fullMessage, "311", false)
-end)
-
-lib.addCommand('311a', {
-    help = 'Send an anonymous message to 311',
-    params = { { name = 'message', type = 'string', help = '311 Message' }},
-}, function(source, args, raw)
-    local fullMessage = raw:sub(5)
-    TriggerClientEvent('ps-dispatch:client:sendEmergencyMsg', source, fullMessage, "311", true)
 end)

@@ -612,13 +612,16 @@ local function Explosion()
 end
 exports('Explosion', Explosion)
 
-local function PhoneCall(message, anonymous, job, type)
-    local coords = GetEntityCoords(cache.ped)
-
+local function PhoneCall(message, anonymous, type)
     if IsCallAllowed(message) then
         PhoneAnimation()
 
+        local coords = GetEntityCoords(cache.ped)
         local playerData = ESX.GetPlayerData()
+        local firstName = playerData.firstName or ""
+        local lastName = playerData.lastName or ""
+        local phoneNumber = playerData.phone or "Unknown"
+
         local dispatchData = {
             message = anonymous and locale('anon_call') or locale('call'),
             codeName = type == '311' and '311call' or '911call',
@@ -626,12 +629,12 @@ local function PhoneCall(message, anonymous, job, type)
             icon = 'fas fa-phone',
             priority = 2,
             coords = coords,
-            name = anonymous and locale('anon') or (playerData.charinfo.firstname .. " " .. playerData.charinfo.lastname),
-            number = anonymous and locale('hidden_number') or playerData.charinfo.phone,
+            name = anonymous and locale('anon') or (firstName .. " " .. lastName),
+            number = anonymous and locale('hidden_number') or phoneNumber,
             information = message,
             street = GetStreetAndZone(coords),
             alertTime = nil,
-            jobs = job
+            jobs = type == '911' and { 'police', 'ambulance' } or { 'ambulance' }
         }
 
         TriggerServerEvent('ps-dispatch:server:notify', dispatchData)

@@ -34,7 +34,8 @@ function IsOnDuty()
     local playerData = ESX.GetPlayerData()
     if not playerData.job then return false end
     
-    return Config.AuthorizedJobs[playerData.job.name] or false
+    local job = Config.Jobs[playerData.job.name]
+    return job and job.authorized or false
 end
 
 ---@return boolean
@@ -53,6 +54,9 @@ end
 ---@param coords table
 ---@return string
 function GetStreetAndZone(coords)
+    if not coords then return "Unknown Location" end
+    if not coords.x or not coords.y or not coords.z then return "Unknown Location" end
+
     local zone = GetLabelText(GetNameOfZone(coords.x, coords.y, coords.z))
     local street = GetStreetNameFromHashKey(GetStreetNameAtCoord(coords.x, coords.y, coords.z))
     return street .. ", " .. zone
