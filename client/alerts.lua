@@ -633,11 +633,12 @@ local function PhoneCall(message, anonymous, type)
             number = anonymous and locale('hidden_number') or phoneNumber,
             information = message,
             street = GetStreetAndZone(coords),
-            alertTime = nil,
+            alertTime = Config.AlertTime or 5,
             jobs = type == '911' and { 'police', 'ambulance' } or { 'ambulance' }
         }
 
         TriggerServerEvent('ps-dispatch:server:notify', dispatchData)
+        lib.notify({ description = locale('dispatch_sent'), type = 'success' })
     end
 end
 

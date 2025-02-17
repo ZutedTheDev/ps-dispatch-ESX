@@ -255,44 +255,22 @@ local OpenDispatchMenu = lib.addKeybind({
 })
 
 -- Events
-RegisterNetEvent('ps-dispatch:client:notify', function(data, source)
-    if data.alertTime == nil then data.alertTime = Config.AlertTime end
-    local timer = data.alertTime * 1000
-
-    if alertsDisabled then return end
-    if not isJobValid(data.jobs) then return end
+RegisterNetEvent('ps-dispatch:client:notify')
+AddEventHandler('ps-dispatch:client:notify', function(data)
+    if alertsMuted or alertsDisabled or inNoDispatchZone then return end
+    if not isJobValid(PlayerData.job.name) then return end
     if not IsOnDuty() then return end
 
-    timerCheck = true
-
     SendNUIMessage({
-        action = 'newCall',
-        data = {
-            data = data,
-            timer = timer,
-        }
+        action = 'addAlert',
+        data = data,
+        job = PlayerData.job.name,
+        sound = not alertsMuted
     })
 
-    addBlip(data, Config.Blips[data.codeName] or data.alert)
-
-    RespondToDispatch:disable(false)
-    OpenDispatchMenu:disable(true)
-
-    local startTime = GetGameTimer()
-    while timerCheck do
-        Wait(1000)
-
-        local currentTime = GetGameTimer()
-        local elapsed = currentTime - startTime
-
-        if elapsed >= timer then
-            break
-        end
+    if Config.AddBlipToCall then
+        CreateBlip(data)
     end
-
-    timerCheck = false
-    OpenDispatchMenu:disable(false)
-    RespondToDispatch:disable(true)
 end)
 
 RegisterNetEvent('ps-dispatch:client:openMenu', function(data)
@@ -328,6 +306,11 @@ local function IsOnDuty()
     if not PlayerData.job then return false end
     return PlayerData.job.name and Config.Jobs[PlayerData.job.name] and Config.Jobs[PlayerData.job.name].authorized
 end
+
+RegisterNetEvent('esx:playerLoaded')
+AddEventHandler('esx:playerLoaded', function(xPlayer)
+    PlayerData = xPlayer
+end)
 
 RegisterNetEvent('esx:setJob')
 AddEventHandler('esx:setJob', function(job)
